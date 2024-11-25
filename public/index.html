@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        /* Reset some basic styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Container styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f4f6f9;
+        }
+
+        /* Chat box styling */
+        #chatContainer {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        /* Message display area */
+        #messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        /* Message styling */
+        .message {
+            padding: 8px 12px;
+            margin: 6px 0;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .user-message {
+            background-color: #d1e7ff;
+            text-align: right;
+        }
+
+        .received-message {
+            background-color: #e2e2e2;
+            text-align: left;
+        }
+
+        /* Input and button styling */
+        #messageContainer {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        #sendBtn {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #sendBtn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chatContainer">
+        <h1>Chat Application</h1>
+
+        <!-- Display area for messages -->
+        <div id="messages"></div>
+
+        <!-- Message input area -->
+        <div id="messageContainer">
+            <input type="text" id="message" placeholder="Enter your message">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <!-- Socket.io Script -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('message');
+        const allMessages = document.getElementById('messages');
+
+        // Display incoming messages
+        socket.on('message', message => {
+            const p = document.createElement('p');
+            p.className = 'message received-message';
+            p.innerText = message;
+            allMessages.appendChild(p);
+            allMessages.scrollTop = allMessages.scrollHeight; // Scroll to the bottom
+        });
+
+        // Send user message
+        sendBtn.addEventListener("click", () => {
+            const message = messageInput.value;
+            if (message.trim()) {
+                const p = document.createElement('p');
+                p.className = 'message user-message';
+                p.innerText = message;
+                allMessages.appendChild(p);
+                socket.emit('user-message', message);
+                messageInput.value = ""; // Clear the input field
+                allMessages.scrollTop = allMessages.scrollHeight; // Scroll to the bottom
+            }
+        });
+
+        // Allow sending messages with the "Enter" key
+        messageInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                sendBtn.click();
+            }
+        });
+    </script>
+</body>
+
+</html>
